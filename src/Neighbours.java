@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import com.sun.org.apache.bcel.internal.generic.AALOAD;
+import org.omg.PortableInterceptor.ACTIVE;
 
 import static java.lang.Math.round;
 import static java.lang.Math.sqrt;
@@ -50,9 +51,17 @@ public class Neighbours extends Application {
     // (i.e move unsatisfied) approx each 1/60 sec.
     void updateWorld() {
         // % of surrounding neighbours that are like me
-        final double threshold = 0.5;
+        final double threshold = 0.2;
+        int worldLength = world.length * world.length;
 
+        State[] actorStates = new State[worldLength];
 
+        for (int y = 0; y < world.length; y++) {
+            for (int x = 0; x < world.length; x++) {
+                actorStates[y*world.length + x] = calcState(y,x, getAmountOfNeighbours(y, x), threshold);
+                out.println(actorStates[y*world.length + x]);
+            }
+        }
         // TODO
     }
 
@@ -66,7 +75,7 @@ public class Neighbours extends Application {
         // %-distribution of RED, BLUE, GREEN and NONE
         double[] dist = {0.25, 0.25, 0.25, 0.25};
         // Number of locations (places) in world (square)
-        int nLocations = 900;
+        int nLocations = 16;
         int arrDim = (int) Math.sqrt(nLocations);
 
         Actor[] a = new Actor[nLocations];
@@ -80,7 +89,7 @@ public class Neighbours extends Application {
         int index = 0;
         for (int i = 0; i < arrDist.length; i++) {
             for (int j = 0; j < arrDist[i]; j++) {
-                a[index] = chooseColor(dist, i);
+                a[index] = chooseColor(i);
                 index++;
             }
         }
@@ -98,7 +107,7 @@ public class Neighbours extends Application {
 
     // TODO write the methods here, implement/test bottom up
         //RED, BLUE, GREEN
-    State setState(int y, int x, int[] neighbours, double threshold) {
+    State calcState(int y, int x, int[] neighbours, double threshold) {
         Actor thisColor = world[y][x];
         int myIndex;
         if(thisColor.equals(Actor.NONE)){
@@ -127,7 +136,7 @@ public class Neighbours extends Application {
            sum += neighbours[i];
         }
 
-        if(neighbours[myIndex]/sum > threshold){
+        if(neighbours[myIndex]/sum >= threshold){
             return State.SATISFIED;
         }
         else{
@@ -136,15 +145,45 @@ public class Neighbours extends Application {
 
     }
 
+    int getAmountOfFriends(int y, int x){
+        Actor a = world[y][x];
 
-    int[] getAmountOfNeighbours(int y, int x, double[] dist) {
+        int neighbours = 0;
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+
+                int indexX = x + j;
+                int indexY = y + i;
+
+                if (indexX < 0 || indexX >= world[0].length) {//Forutsatter att det ar en kvadratisk matris.
+
+                } else if (indexY < 0 || indexY >= world.length) {
+
+                } else if (world[indexY][indexX].equals(a)) {
+                    neighbours++;
+                }
+
+            }
+
+        }
+
+        if (world[y][x].equals(a)) {
+            neighbours -= 1; //metoden raknar med sig sjlalv en gang
+        }
+
+
+        return 0;
+    }
+
+    int[] getAmountOfNeighbours(int y, int x) {
+        int amountOfColors = Actor.values().length -1;
         if (world[y][x].equals(Actor.NONE)) {
             return new int[0];
         }
 
-        int[] ghf = new int[dist.length - 1];
-        for (int u = 0; u < dist.length - 1; u++) {
-            Actor color = chooseColor(dist, u);
+        int[] amountOfSurroundingColors = new int[amountOfColors];
+        for (int u = 0; u < amountOfColors; u++) {
+            Actor color = chooseColor(u);
 
             int neighbours = 0;
             for (int i = -1; i < 2; i++) {
@@ -169,9 +208,9 @@ public class Neighbours extends Application {
                 neighbours -= 1; //metoden raknar med sig sjlalv en gang
             }
 
-            ghf[u] = neighbours;
+            amountOfSurroundingColors[u] = neighbours;
         }
-        return ghf;
+        return amountOfSurroundingColors;
 
     }
 
@@ -196,8 +235,8 @@ public class Neighbours extends Application {
 
     }
 
-    Actor chooseColor(double[] dist, int index) {
-        switch (dist.length - index) {
+    Actor chooseColor(int index) {
+        switch (Actor.values().length - index) {
 
             case 1:
                 return Actor.NONE;
@@ -259,7 +298,7 @@ public class Neighbours extends Application {
         for (int i = 0; i < testtst.length; i++) {
             System.out.println(Arrays.toString(testtst[i]));
         }
-        System.out.println();
+        System.out.println(Actor.values().length);
 //		Actor[] gfkhj = ArrTo1DArr(testWorld);
 //		System.out.println(Arrays.toString(gfkhj));
 //		shuffle(gfkhj);
