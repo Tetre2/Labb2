@@ -56,31 +56,51 @@ public class Neighbours extends Application {
 
 
         // Index 0 = Actor, Index 1 = State, Index 2 = Y, Index 3 = X
-        Object[][] actorStates = new Object[worldLength][4];
+        Object[][] satisfiedActors = new Object[worldLength][4];
 
 
 
         //State[] actorStates = new State[worldLength];
 
+        /*
+               Einars idé på hur vi ska Swap:a NA och UNSATISFIED.
+        {
+            [S][X][y]
+            [S][X][y]
+        }
+
+        {
+            [N][X][y]
+            [N][X][y]
+            [N][X][y]
+        }
+
+        */
+
         for (int y = 0; y < world.length; y++) {
             for (int x = 0; x < world.length; x++) {
                 if(!world[y][x].equals(Actor.NONE)){
-                    actorStates[y*world.length + x][1] = calcState(y,x, getAmountOfNeighbours(y, x), threshold);
-                    actorStates[y*world.length + x][0] = world[y][x];
+
+                    State temp = calcState(y,x, getAmountOfNeighbours(y, x), threshold);
+
+                    if(temp.equals(State.UNSATISFIED)){
+                        satisfiedActors[y*world.length + x][1] = temp;
+                    }
+                    satisfiedActors[y*world.length + x][0] = world[y][x];
                 }
                 else{
-                    actorStates[y*world.length + x][1] = State.NA;
-                    actorStates[y*world.length + x][0] = Actor.NONE;
+                    satisfiedActors[y*world.length + x][1] = State.NA;
+                    satisfiedActors[y*world.length + x][0] = Actor.NONE;
                 }
-                actorStates[y*world.length + x][2] = y;
-                actorStates[y*world.length + x][3] = x;
+                satisfiedActors[y*world.length + x][2] = y;
+                satisfiedActors[y*world.length + x][3] = x;
 
                 //out.println(actorStates[y*world.length + x]);
             }
         }
         // TODO
 
-        relocateUnsatisfied(actorStates);
+        relocateUnsatisfied(satisfiedActors);
     }
 
     // This method initializes the world variable with a random distribution of Actors
@@ -127,7 +147,7 @@ public class Neighbours extends Application {
 
 
     int relocateUnsatisfied(Object[][] o){
-        Object[][] unsat = new Object[][]
+        Object[][] unsat = new Object[3][2];
 
 
         for (int i = 0; i < o.length; i++) {
