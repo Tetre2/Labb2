@@ -54,15 +54,33 @@ public class Neighbours extends Application {
         final double threshold = 0.2;
         int worldLength = world.length * world.length;
 
-        State[] actorStates = new State[worldLength];
+
+        // Index 0 = Actor, Index 1 = State, Index 2 = Y, Index 3 = X
+        Object[][] actorStates = new Object[worldLength][4];
+
+
+
+        //State[] actorStates = new State[worldLength];
 
         for (int y = 0; y < world.length; y++) {
             for (int x = 0; x < world.length; x++) {
-                actorStates[y*world.length + x] = calcState(y,x, getAmountOfNeighbours(y, x), threshold);
-                out.println(actorStates[y*world.length + x]);
+                if(!world[y][x].equals(Actor.NONE)){
+                    actorStates[y*world.length + x][1] = calcState(y,x, getAmountOfNeighbours(y, x), threshold);
+                    actorStates[y*world.length + x][0] = world[y][x];
+                }
+                else{
+                    actorStates[y*world.length + x][1] = State.NA;
+                    actorStates[y*world.length + x][0] = Actor.NONE;
+                }
+                actorStates[y*world.length + x][2] = y;
+                actorStates[y*world.length + x][3] = x;
+
+                //out.println(actorStates[y*world.length + x]);
             }
         }
         // TODO
+
+        relocateUnsatisfied(actorStates);
     }
 
     // This method initializes the world variable with a random distribution of Actors
@@ -106,37 +124,43 @@ public class Neighbours extends Application {
     // ------- Methods ------------------
 
     // TODO write the methods here, implement/test bottom up
+
+
+    int relocateUnsatisfied(Object[][] o){
+        Object[][] unsat = new Object[][]
+
+
+        for (int i = 0; i < o.length; i++) {
+
+            if(o[i][1].equals(State.UNSATISFIED)){
+
+            }
+
+
+        }
+        return 0;
+    }
+
+
+
+
         //RED, BLUE, GREEN
-    State calcState(int y, int x, int[] neighbours, double threshold) {
+    State calcState(int y, int x, int neighbours, double threshold) {
         Actor thisColor = world[y][x];
-        int myIndex;
+
         if(thisColor.equals(Actor.NONE)){
             return State.NA;
         }
 
-        switch(thisColor) {
 
-            case RED:
-                myIndex = 0;
-                break;
-            case BLUE:
-                myIndex = 1;
-                break;
-            case GREEN:
-                myIndex = 2;
-                break;
-            default:
-                myIndex = -1;
-                break;
-        }
+        //out.println("Friends: " + getAmountOfFriends(y, x) + "\nNeighbours: " + neighbours );
 
-        int sum = 0;
+        //Event: 0/0 kan förekomma och resulterar i värdet NaN.
+        double percentOfSurroundingFriends = (double)getAmountOfFriends(y, x)/neighbours;
 
-        for (int i = 0; i < neighbours.length; i++) {
-           sum += neighbours[i];
-        }
+        //out.println("Percentage: " + percentOfSurroundingFriends);
 
-        if(neighbours[myIndex]/sum >= threshold){
+        if(percentOfSurroundingFriends >= threshold){
             return State.SATISFIED;
         }
         else{
@@ -162,29 +186,15 @@ public class Neighbours extends Application {
                 } else if (world[indexY][indexX].equals(a)) {
                     neighbours++;
                 }
-
             }
-
         }
 
-        if (world[y][x].equals(a)) {
-            neighbours -= 1; //metoden raknar med sig sjlalv en gang
-        }
-
-
-        return 0;
+        //Tar -1 för att räkna bort sig själv.
+        return neighbours -1;
     }
 
-    int[] getAmountOfNeighbours(int y, int x) {
-        int amountOfColors = Actor.values().length -1;
-        if (world[y][x].equals(Actor.NONE)) {
-            return new int[0];
-        }
-
-        int[] amountOfSurroundingColors = new int[amountOfColors];
-        for (int u = 0; u < amountOfColors; u++) {
-            Actor color = chooseColor(u);
-
+    //Kollar hur många grannar som finns genom att kolla hur många celler som inte är tomma.
+    int getAmountOfNeighbours(int y, int x) {
             int neighbours = 0;
             for (int i = -1; i < 2; i++) {
                 for (int j = -1; j < 2; j++) {
@@ -196,32 +206,25 @@ public class Neighbours extends Application {
 
                     } else if (indexY < 0 || indexY >= world.length) {
 
-                    } else if (world[indexY][indexX].equals(color)) {
+                    } else if (!world[indexY][indexX].equals(Actor.NONE)) {
                         neighbours++;
                     }
-
                 }
 
             }
-
-            if (world[y][x].equals(color)) {
-                neighbours -= 1; //metoden raknar med sig sjlalv en gang
-            }
-
-            amountOfSurroundingColors[u] = neighbours;
-        }
-        return amountOfSurroundingColors;
+        //Tar -1 för att räkna bort sig själv. OBS, inte anpassad om cellen är NONE.
+        return neighbours -1;
 
     }
 
 
 //	Actor[][] shuffle(Actor[][] arr) {
-//		
+//
 //		Actor[] a = ArrTo1DArr(arr);
 //		shuffle(a);
 //		return arrToMat(a, arr.length);
-//		
-//	}	
+//
+//	}
 
     void shuffle(Actor[] arr) {
         Random rand = new Random();
@@ -241,11 +244,11 @@ public class Neighbours extends Application {
             case 1:
                 return Actor.NONE;
             case 2:
-                return Actor.BLUE;
-            case 3:
-                return Actor.RED;
-            case 4:                    //Can add more colors
                 return Actor.GREEN;
+            case 3:
+                return Actor.BLUE;
+            case 4:                    //Can add more colors
+                return Actor.RED;
             default:
                 return Actor.NONE;
         }
@@ -289,7 +292,7 @@ public class Neighbours extends Application {
 
         Actor[] a = new Actor[]{
                 Actor.RED, Actor.RED, Actor.NONE,
-                Actor.NONE, Actor.BLUE, Actor.NONE,
+                Actor.NONE, Actor.NONE, Actor.NONE,
                 Actor.RED, Actor.NONE, Actor.BLUE
         };
 
