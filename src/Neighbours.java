@@ -68,20 +68,21 @@ public class Neighbours extends Application {
 	// Below is the *only* accepted instance variable (i.e. variables outside any method)
 // This variable may *only* be used in methods init() and updateWorld()
 	Actor[][] world; // The world is a square matrix of Actors
-
+	int speed = 1;
 	// This is the method called by the timer to update the world
 // (i.e move unsatisfied) approx each 1/60 sec.
 	void updateWorld() {
 // % of surrounding neighbours that are like me
-		final double threshold = 0.7;
+
+		final double threshold = 0.4;
 		int worldLength = world.length * world.length;
 
-		int[][] naActors = null;
-		Object[][] unsatActors = null;
+		int[][] naActors;
+		Object[][] unsatActors;
 
 
-		setNA(naActors);
-		setUnsatisfied(unsatActors, threshold);
+		naActors = getNA();
+		unsatActors = getUnsatisfied(threshold);
 		shuffleMatrix(naActors);
 		switchXAndY(naActors, unsatActors);
 
@@ -102,7 +103,7 @@ public class Neighbours extends Application {
 // %-distribution of RED, BLUE, GREEN and NONE
 		double[] dist = {0.25, 0.25, 0.25, 0.25};
 // Number of locations (places) in world (square)
-		int nLocations = 900;
+		int nLocations = 10000;
 		int arrDim = (int) Math.sqrt(nLocations);
 
 		Actor[] a = new Actor[nLocations];
@@ -120,7 +121,7 @@ public class Neighbours extends Application {
 				index++;
 			}
 		}
-
+		//TODO vill vi ha två olika shuffle?
 		shuffle(a);
 		world = arrToMat(a, arrDim);
 
@@ -156,27 +157,26 @@ public class Neighbours extends Application {
 	}
 
 
-	void switchXAndY(int[][] na, Object[][] unsatisfied) {
+	void switchXAndY(int[][] naActors, Object[][] unsatActors) {
 		int tempY = 0;
 		int tempX = 0;
-		for (int i = 0; i < na.length; i++) {
-			if ((i < na.length) && (i < unsatisfied.length)) {
-				tempY = na[i][0]; //Y
-				tempX = na[i][1]; //X
+		for (int i = 0; i < naActors.length && i < unsatActors.length; i++) {
+			//TODO återställ om det inte fungerar som tänkt, diskutera med Koftan. VI har tagit bort if statement och lagt det i for loopen istället.
+				tempY = naActors[i][0]; //Y
+				tempX = naActors[i][1]; //X
 
-				na[i][0] = (int) unsatisfied[i][0];
-				na[i][1] = (int) unsatisfied[i][1];
+				naActors[i][0] = (int) unsatActors[i][0];
+				naActors[i][1] = (int) unsatActors[i][1];
 
-				unsatisfied[i][0] = tempX;
-				unsatisfied[i][1] = tempY;
-			}
+				unsatActors[i][0] = tempY;
+				unsatActors[i][1] = tempX;
 
 		}
 
 	}
 
 	//index 0 = Y, index 1 = X
-	void setNA(int[][] naActors) {
+	int[][] getNA() {
 		int amountNA = 0;
 		for (int i = 0; i < world.length; i++) {
 			for (int j = 0; j < world.length; j++) {
@@ -185,7 +185,7 @@ public class Neighbours extends Application {
 				}
 			}
 		}
-		naActors = new int[amountNA][2];
+		int[][] naActors = new int[amountNA][2];
 
 		int counter = 0;
 
@@ -200,10 +200,11 @@ public class Neighbours extends Application {
 
 			}
 		}
+		return naActors;
 	}
 
 
-	void setUnsatisfied(Object[][] unsatActors, double threshold) {
+	Object[][] getUnsatisfied(double threshold) {
 		int amountUnsatisfied = 0;
 
 		for (int i = 0; i < world.length; i++) {
@@ -215,7 +216,7 @@ public class Neighbours extends Application {
 		}
 
 // Index 0 = Y, Index 1 = X, Index 2 = Actor
-		unsatActors = new Object[amountUnsatisfied][3];
+		Object[][] unsatActors = new Object[amountUnsatisfied][3];
 		int indexUnsatisfied = 0;
 
 		for (int i = 0; i < world.length; i++) {
@@ -228,7 +229,7 @@ public class Neighbours extends Application {
 				}
 			}
 		}
-
+		return unsatActors;
 	}
 
 
@@ -451,7 +452,7 @@ return count;
 			// This method called by FX, parameter is the current time
 			public void handle(long currentNanoTime) {
 				long elapsedNanos = currentNanoTime - previousTime;
-				if (elapsedNanos > interval) {
+				if (elapsedNanos > speed * interval) {
 					updateWorld();
 					renderWorld(gc, world);
 					previousTime = currentNanoTime;
