@@ -74,22 +74,16 @@ public class Neighbours extends Application {
 	void updateWorld() {
 // % of surrounding neighbours that are like me
 
-		final double threshold = 0.4;
-		int worldLength = world.length * world.length;
+		final double threshold = 0.6;
 
 		int[][] naActors;
 		Object[][] unsatActors;
 
-
 		naActors = getNA();
 		unsatActors = getUnsatisfied(threshold);
-		shuffleMatrix(naActors);
+		shuffle(naActors);
 		switchXAndY(naActors, unsatActors);
-
-//TODO implementera metod.
-		disbributeActorsToWorld(naActors, unsatActors);
-
-//Kopierar ut till world.
+		distributeActorsToWorld(naActors, unsatActors);
 
 	}
 
@@ -101,29 +95,30 @@ public class Neighbours extends Application {
 //test(); // <---------------- Uncomment to TEST!
 
 // %-distribution of RED, BLUE, GREEN and NONE
-		double[] dist = {0.25, 0.25, 0.25, 0.25};
+		double[] distribution = {0.15, 0.35, 0.40, 0.10};
 // Number of locations (places) in world (square)
 		int nLocations = 10000;
 		int arrDim = (int) Math.sqrt(nLocations);
 
-		Actor[] a = new Actor[nLocations];
-		int[] arrDist = new int[dist.length];
+		Actor[] actors = new Actor[nLocations];
+		int[] arrDistribution = new int[distribution.length];
 
-		for (int i = 0; i < dist.length; i++) {
-			arrDist[i] = (int) Math.round(dist[i] * nLocations);
+		//Calculating amount of actors based on distribution and converting from double to int arr.
+		for (int i = 0; i < distribution.length; i++) {
+			arrDistribution[i] = (int) Math.round(distribution[i] * nLocations);
 		}
 
-
+		//Choose colors according to distribution and place in an actors array.
 		int index = 0;
-		for (int i = 0; i < arrDist.length; i++) {
-			for (int j = 0; j < arrDist[i]; j++) {
-				a[index] = chooseColor(i);
+		for (int i = 0; i < arrDistribution.length; i++) {
+			for (int j = 0; j < arrDistribution[i]; j++) {
+				actors[index] = chooseColor(i);
 				index++;
 			}
 		}
 		//TODO vill vi ha två olika shuffle?
-		shuffle(a);
-		world = arrToMat(a, arrDim);
+		shuffle(actors);
+		world = arrToMat(actors, arrDim);
 
 
 // Should be last
@@ -135,13 +130,15 @@ public class Neighbours extends Application {
 
 // TODO write the methods here, implement/test bottom up
 
-	void disbributeActorsToWorld(int[][] naActors, Object[][] unsatActors){
+
+	//TODO does it distribute all actors or only NA and Unsat? Why?
+	void distributeActorsToWorld(int[][] naActors, Object[][] unsatActors){
 		for (int i = 0; i < world.length; i++) {
 			for (int j = 0; j < world.length; j++) {
 
 				for (int k = 0; k < naActors.length; k++) {
 
-					if (((int) naActors[k][0] == i) && ((int) naActors[k][1] == j)) {
+					if ((naActors[k][0] == i) && (naActors[k][1] == j)) {
 						world[i][j] = Actor.NONE;
 
 					}
@@ -177,6 +174,8 @@ public class Neighbours extends Application {
 
 	//index 0 = Y, index 1 = X
 	int[][] getNA() {
+
+		//Checking how many NA there are in order to create an matrix.
 		int amountNA = 0;
 		for (int i = 0; i < world.length; i++) {
 			for (int j = 0; j < world.length; j++) {
@@ -185,10 +184,12 @@ public class Neighbours extends Application {
 				}
 			}
 		}
+		//Create matrix.
 		int[][] naActors = new int[amountNA][2];
 
 		int counter = 0;
 
+		//Fill naActors with coordinates of NA within world.
 		for (int i = 0; i < world.length; i++) {
 			for (int j = 0; j < world.length; j++) {
 
@@ -207,6 +208,7 @@ public class Neighbours extends Application {
 	Object[][] getUnsatisfied(double threshold) {
 		int amountUnsatisfied = 0;
 
+		//Checking how many unsatisfied actors there are in order to create an matrix.
 		for (int i = 0; i < world.length; i++) {
 			for (int j = 0; j < world.length; j++) {
 				if (calcState(i, j, threshold) == State.UNSATISFIED) {
@@ -215,10 +217,11 @@ public class Neighbours extends Application {
 			}
 		}
 
-// Index 0 = Y, Index 1 = X, Index 2 = Actor
+		// Create matrix. Index 0 = Y, Index 1 = X, Index 2 = Actor
 		Object[][] unsatActors = new Object[amountUnsatisfied][3];
 		int indexUnsatisfied = 0;
 
+		//Fill unsatActors with coordinates of unsatisfied actors within world.
 		for (int i = 0; i < world.length; i++) {
 			for (int j = 0; j < world.length; j++) {
 				if (calcState(i, j, threshold) == State.UNSATISFIED) {
@@ -241,13 +244,17 @@ public class Neighbours extends Application {
 			return State.NA;
 		}
 
+		double percentOfSurroundingFriends;
+		//TODO dubbelkika med koftan, problem löst. Event: 0/0 kan förekomma och resulterar i värdet NaN.
+		if(getAmountOfNeighbours(y, x) == 0){
+			percentOfSurroundingFriends = 0;
+		}
+		else {
+			percentOfSurroundingFriends = (double) getAmountOfFriends(y, x) / getAmountOfNeighbours(y, x);
+		}
 
-//out.println("Friends: " + getAmountOfFriends(y, x) + "\nNeighbours: " + neighbours );
-
-//Event: 0/0 kan förekomma och resulterar i värdet NaN.
-		double percentOfSurroundingFriends = (double) getAmountOfFriends(y, x) / getAmountOfNeighbours(y, x);
-
-//out.println("Percentage: " + percentOfSurroundingFriends);
+		//TODO ta bort raden under. .... ... ...
+		//out.println("Percentage: " + percentOfSurroundingFriends);
 
 		if (percentOfSurroundingFriends >= threshold) {
 			return State.SATISFIED;
@@ -260,25 +267,26 @@ public class Neighbours extends Application {
 	int getAmountOfFriends(int y, int x) {
 		Actor a = world[y][x];
 
-		int neighbours = 0;
+		int friends = 0;
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
 
 				int indexX = x + j;
 				int indexY = y + i;
 
+				//TODO skriva en if-sats som kollar om i och j är 0. i så fall hoppa över hela steget.
 				if (indexX < 0 || indexX >= world[0].length) {//Forutsatter att det ar en kvadratisk matris.
-
+					//TODO fyll det med något för att undvika tomt block
 				} else if (indexY < 0 || indexY >= world.length) {
-
+					//TODO fyll det med något för att undvika tomt block
 				} else if (world[indexY][indexX].equals(a)) {
-					neighbours++;
+					friends++;
 				}
 			}
 		}
 
 //Tar -1 för att räkna bort sig själv.
-		return neighbours - 1;
+		return friends - 1;
 	}
 
 	//Kollar hur många grannar som finns genom att kolla hur många celler som inte är tomma.
@@ -305,18 +313,19 @@ public class Neighbours extends Application {
 
 	}
 
-	//TODO Ger error, Nullpointerexc.
-	void shuffleMatrix(int[][] arr) {
+	//TODO Varför behöver vi inte skriva andra delen av [][] ??? ?!?!?!?!
+	void shuffle(int[][] matrix) {
 		Random rand = new Random();
-		for (int i = arr.length; i > 1; i--) {
-			int j = rand.nextInt(i);
-			int[] temp = arr[j];
-			arr[j] = arr[i - 1];
-			arr[i - 1] = temp;
+		for (int i = matrix.length -1; i >= 0; i--) {
+			int j = rand.nextInt(i +1);
+			int[] temp = matrix[j];
+			matrix[j] = matrix[i];
+			matrix[i] = temp;
 		}
 
 	}
 
+	//TODO fixa till likadan som ovan efter konsultera med koftan.
 	void shuffle(Actor[] arr) {
 		Random rand = new Random();
 		for (int i = arr.length; i > 1; i--) {
@@ -328,6 +337,8 @@ public class Neighbours extends Application {
 		}
 
 	}
+
+	//TODO fortsätt genomsöka kod härifrån.
 
 	Actor chooseColor(int index) {
 		switch (Actor.values().length - index) {
@@ -452,7 +463,7 @@ return count;
 			// This method called by FX, parameter is the current time
 			public void handle(long currentNanoTime) {
 				long elapsedNanos = currentNanoTime - previousTime;
-				if (elapsedNanos > speed * interval) {
+				if (elapsedNanos > speed * 0.01 * interval) {
 					updateWorld();
 					renderWorld(gc, world);
 					previousTime = currentNanoTime;
