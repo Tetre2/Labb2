@@ -68,7 +68,7 @@ public class Neighbours extends Application {
 	// Below is the *only* accepted instance variable (i.e. variables outside any method)
 // This variable may *only* be used in methods init() and updateWorld()
 	Actor[][] world; // The world is a square matrix of Actors
-	int speed = 1;
+	double speed = 0.1;
 	// This is the method called by the timer to update the world
 // (i.e move unsatisfied) approx each 1/60 sec.
 	void updateWorld() {
@@ -82,7 +82,7 @@ public class Neighbours extends Application {
 		naActors = getNA();
 		unsatActors = getUnsatisfied(threshold);
 		shuffle(naActors);
-		switchXAndY(naActors, unsatActors);
+		swapMatrixData(naActors, unsatActors);
 		distributeActorsToWorld(naActors, unsatActors);
 
 	}
@@ -95,7 +95,7 @@ public class Neighbours extends Application {
 //test(); // <---------------- Uncomment to TEST!
 
 // %-distribution of RED, BLUE, GREEN and NONE
-		double[] distribution = {0.15, 0.35, 0.40, 0.10};
+		double[] distribution = {0.15, 0.18, 0.17, 0.50};
 // Number of locations (places) in world (square)
 		int nLocations = 10000;
 		int arrDim = (int) Math.sqrt(nLocations);
@@ -128,8 +128,6 @@ public class Neighbours extends Application {
 
 // ------- Methods ------------------
 
-// TODO write the methods here, implement/test bottom up
-
 
 	//TODO does it distribute all actors or only NA and Unsat? Why?
 	void distributeActorsToWorld(int[][] naActors, Object[][] unsatActors){
@@ -154,7 +152,7 @@ public class Neighbours extends Application {
 	}
 
 
-	void switchXAndY(int[][] naActors, Object[][] unsatActors) {
+	void swapMatrixData(int[][] naActors, Object[][] unsatActors) {
 		int tempY = 0;
 		int tempX = 0;
 		for (int i = 0; i < naActors.length && i < unsatActors.length; i++) {
@@ -253,9 +251,6 @@ public class Neighbours extends Application {
 			percentOfSurroundingFriends = (double) getAmountOfFriends(y, x) / getAmountOfNeighbours(y, x);
 		}
 
-		//TODO ta bort raden under. .... ... ...
-		//out.println("Percentage: " + percentOfSurroundingFriends);
-
 		if (percentOfSurroundingFriends >= threshold) {
 			return State.SATISFIED;
 		} else {
@@ -338,8 +333,6 @@ public class Neighbours extends Application {
 
 	}
 
-	//TODO fortsätt genomsöka kod härifrån.
-
 	Actor chooseColor(int index) {
 		switch (Actor.values().length - index) {
 
@@ -356,6 +349,7 @@ public class Neighbours extends Application {
 		}
 	}
 
+	//FIXME Ta bort efter koncultering med Koftan.
 	Actor[] matToArr(Actor[][] actor) {
 		int arrDim = actor[0].length;
 		Actor[] a = new Actor[arrDim * arrDim];
@@ -366,7 +360,7 @@ public class Neighbours extends Application {
 		}
 		return a;
 	}
-
+	//TODO Använd heltalsdivision och modulus istället för denna krångliga loop.
 	Actor[][] arrToMat(Actor[] arr, int arrDim) {
 		Actor[][] a = new Actor[arrDim][arrDim];
 		for (int i = 0; i < arrDim; i++) {
@@ -463,7 +457,7 @@ return count;
 			// This method called by FX, parameter is the current time
 			public void handle(long currentNanoTime) {
 				long elapsedNanos = currentNanoTime - previousTime;
-				if (elapsedNanos > speed * 0.01 * interval) {
+				if (elapsedNanos > speed * interval) {
 					updateWorld();
 					renderWorld(gc, world);
 					previousTime = currentNanoTime;
