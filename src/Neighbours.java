@@ -74,10 +74,9 @@ public class Neighbours extends Application {
 // (i.e move unsatisfied) approx each 1/60 sec.
     void updateWorld() {
 // % of surrounding neighbours that are like me
-
         final double threshold = 0.6;
 
-        int[][] naActors;
+       /* int[][] naActors;
         Object[][] unsatActors;
 
         naActors = getNA();
@@ -87,21 +86,29 @@ public class Neighbours extends Application {
         shuffle(naActors);
         swapMatrixData(naActors, unsatActors);
         distributeActorsToWorld(naActors, unsatActors);
+*/
+
+
+        Actor[][] naActors = getNA(world);
+        Actor[][] unsatActors = getUnsatisfied(threshold, world);
+        swapMatrixData(naActors, unsatActors);
+        distributeActorsToWorld(naActors, unsatActors);
+
 
     }
 
     // This method initializes the world variable with a random distribution of Actors
-// Method automatically called by JavaFX runtime (before graphics appear)
-// Don't care about "@Override" and "public" (just accept for now)
+    // Method automatically called by JavaFX runtime (before graphics appear)
+    // Don't care about "@Override" and "public" (just accept for now)
     @Override
     public void init() {
-//test(); // <---------------- Uncomment to TEST!
+        //test(); // <---------------- Uncomment to TEST!
 
-// %-distribution of RED, BLUE, GREEN and NONE
+        // %-distribution of RED, BLUE, GREEN and NONE
         //double[] distribution = {0.3, 0.2, 0.3, 0.20};
         double[] distribution = {0.15, 0.17, 0.18, 0.50};
-// Number of locations (places) in world (square)
-        int nLocations = 90000;
+        // Number of locations (places) in world (square)
+        int nLocations = 900;
 
         Actor[] actors = new Actor[nLocations];
         int[] arrDistribution = new int[distribution.length];
@@ -131,90 +138,52 @@ public class Neighbours extends Application {
 
 // ------- Methods ------------------
 
-//TODO GÖR OM!!!!!!!!!!!!!!!!!!!!!!!!!!
-//index 0 = Y, index 1 = X
-    void distributeActorsToWorld(int[][] naActors, Object[][] unsatActors) {
-       /* int size = (int) round(sqrt(world.length));
-        for (int i = 0; i < world.length; i++) {
-            for (int k = 0; k < naActors.length || k < unsatActors.length; k++) {
-                if(k >= naActors.length) {
-                    if ((naActors[k][0] == i / size) && (naActors[k][1] == i % size)) {
-                        world[i / size][i % size] = Actor.NONE;
-                        break;
-                    }
-                }
-                if(k >= unsatActors.length) {
-                    if (((int) unsatActors[k][0] == i / size) && ((int) unsatActors[k][1] == i % size)) {
-                        world[i / size][i % size] = (Actor) unsatActors[k][2];
-                        break;
-                    }
-                }
+    //index 0 = Y, index 1 = X
+    void distributeActorsToWorld(Actor[][] naActors, Actor[][] unsatActors) {
+        int size = world.length;
+        for (int i = 0; i < world.length * world.length; i++) {
+
+            if (naActors[i / size][i % size] != null) {
+                world[i / size][i % size] = naActors[i / size][i % size];
             }
-        }*/
 
-        for (int i = 0; i < world.length; i++) {
-            for (int j = 0; j < world.length; j++) {
-
-                for (int k = 0; k < naActors.length; k++) {
-
-                    if ((naActors[k][0] == i) && (naActors[k][1] == j)) {
-                        world[i][j] = Actor.NONE;
-
-                    }
-                }
-                for (int k = 0; k < unsatActors.length; k++) {
-                    if (((int) unsatActors[k][0] == i) && ((int) unsatActors[k][1] == j)) {
-                        world[i][j] = (Actor) unsatActors[k][2];
-                    }
-                }
+            else if (unsatActors[i / size][i % size] != null) {
+                world[i / size][i % size] = unsatActors[i / size][i % size];
             }
         }
-
     }
 
 
-    void swapMatrixData(int[][] naActors, Object[][] unsatActors) {
-        int tempY = 0;
-        int tempX = 0;
-        for (int i = 0; i < naActors.length && i < unsatActors.length; i++) {
-            tempY = naActors[i][0]; //Y
-            tempX = naActors[i][1]; //X
+    void swapMatrixData(Actor[][] naActors, Actor[][] unsatActors) {
+        int size = naActors.length;
 
-            naActors[i][0] = (int) unsatActors[i][0];
-            naActors[i][1] = (int) unsatActors[i][1];
+        for (int i = 0; i < naActors.length * naActors.length; i++) {
+            if (naActors[i / size][i % size] == Actor.NONE) {
 
-            unsatActors[i][0] = tempY;
-            unsatActors[i][1] = tempX;
-
+                for (int j = 0; j < unsatActors.length * unsatActors.length; j++) {
+                    if (unsatActors[j / size][j % size] != Actor.NONE && unsatActors[j / size][j % size] != null) {  // Cant find privious unSatActors becuse thay are None now
+                        //Set unSatActor to None and naActor to the unSatActors Color   TODO LOOK HERE!!!
+                        naActors[i / size][i % size] = unsatActors[j / size][j % size];
+                        unsatActors[j / size][j % size] = Actor.NONE;
+                        break;
+                    }
+                }
+            }
         }
-
+        //na contains now only unsat colors and unsat only contains None
     }
 
     //index 0 = Y, index 1 = X
-    int[][] getNA() {
-
-        //Checking how many NA there are in order to create an matrix.
-        int amountNA = 0;
-        for (int i = 0; i < world.length; i++) {
-            for (int j = 0; j < world.length; j++) {
-                if (world[i][j] == Actor.NONE) {
-                    amountNA++;
-                }
-            }
-        }
+    Actor[][] getNA(Actor[][] world) {
         //Create matrix.
-        int[][] naActors = new int[amountNA][2];
-
-        int counter = 0;
+        Actor[][] naActors = new Actor[world.length][world.length];
 
         //Fill naActors with coordinates of NA within world.
         for (int i = 0; i < world.length; i++) {
             for (int j = 0; j < world.length; j++) {
 
                 if (world[i][j] == Actor.NONE) {
-                    naActors[counter][0] = i;
-                    naActors[counter][1] = j;
-                    counter++;
+                    naActors[i][j] = Actor.NONE;
                 }
 
             }
@@ -223,30 +192,16 @@ public class Neighbours extends Application {
     }
 
 
-    Object[][] getUnsatisfied(double threshold) {
-        int amountUnsatisfied = 0;
-
-        //Checking how many unsatisfied actors there are in order to create an matrix.
-        for (int i = 0; i < world.length; i++) {
-            for (int j = 0; j < world.length; j++) {
-                if (calcState(i, j, threshold) == State.UNSATISFIED) {
-                    amountUnsatisfied++;
-                }
-            }
-        }
+    Actor[][] getUnsatisfied(double threshold, Actor[][] world) {
 
         // Create matrix. Index 0 = Y, Index 1 = X, Index 2 = Actor
-        Object[][] unsatActors = new Object[amountUnsatisfied][3];
-        int indexUnsatisfied = 0;
+        Actor[][] unsatActors = new Actor[world.length][world.length];
 
         //Fill unsatActors with coordinates of unsatisfied actors within world.
         for (int i = 0; i < world.length; i++) {
             for (int j = 0; j < world.length; j++) {
                 if (calcState(i, j, threshold) == State.UNSATISFIED) {
-                    unsatActors[indexUnsatisfied][0] = i;
-                    unsatActors[indexUnsatisfied][1] = j;
-                    unsatActors[indexUnsatisfied][2] = world[i][j];
-                    indexUnsatisfied++;
+                    unsatActors[i][j] = world[i][j];
                 }
             }
         }
@@ -289,7 +244,7 @@ public class Neighbours extends Application {
                 int indexY = y + i;
 
                 if (!(i == 0 && j == 0) && isValid(indexY, indexX)) {
-                   if (world[indexY][indexX].equals(a)) {
+                    if (world[indexY][indexX].equals(a)) {
                         friends++;
                     }
                 }
@@ -301,8 +256,8 @@ public class Neighbours extends Application {
         return friends;
     }
 
-    boolean isValid(int y, int x){
-        return!((y < 0 || y >= world.length) || (x < 0 || x >= world[0].length));
+    boolean isValid(int y, int x) {
+        return !((y < 0 || y >= world.length) || (x < 0 || x >= world[0].length));
     }
 
     //Kollar hur många grannar som finns genom att kolla hur många celler som inte är tomma.
@@ -314,7 +269,7 @@ public class Neighbours extends Application {
                 int indexX = x + j;
                 int indexY = y + i;
 
-                if(!(i == 0 && j == 0) && isValid(indexY, indexX)) {
+                if (!(i == 0 && j == 0) && isValid(indexY, indexX)) {
                     if (world[indexY][indexX].equals(Actor.NONE)) {
                         neighbours++;
                     }
@@ -324,17 +279,6 @@ public class Neighbours extends Application {
         }
 //Tar -1 för att räkna bort sig själv. OBS, inte anpassad om cellen är NONE.
         return neighbours - 1;
-
-    }
-
-    void shuffle(int[][] matrix) {
-        Random rand = new Random();
-        for (int i = matrix.length - 1; i > 0; i--) {
-            int j = rand.nextInt(i + 1);
-            int[] temp = matrix[j];
-            matrix[j] = matrix[i];
-            matrix[i] = temp;
-        }
 
     }
 
@@ -386,21 +330,45 @@ public class Neighbours extends Application {
                 {Actor.NONE, Actor.BLUE, Actor.NONE},
                 {Actor.RED, Actor.NONE, Actor.BLUE}
         };
+        Actor[][] na = new Actor[][]{
+                {null, null, Actor.NONE},
+                {Actor.NONE, null, null},
+                {null, null, null}
+        };
+        Actor[][] unsat = new Actor[][]{
+                {null, Actor.RED, null},
+                {null, null, null},
+                {null, null, Actor.BLUE}
+        };
+
+        swapMatrixData(na, unsat);
+
+        System.out.println("Na: ");
+        for (int i = 0; i < na.length; i++) {
+            System.out.println(Arrays.toString(na[i]));
+        }
+        System.out.println("\nUnsat");
+        for (int i = 0; i < unsat.length; i++) {
+            System.out.println(Arrays.toString(unsat[i]));
+        }
+
+
+
         double th = 0.5; // Simple threshold used for testing
         int size = testWorld.length;
-
         Actor[] a = new Actor[]{
                 Actor.RED, Actor.RED, Actor.NONE,
                 Actor.NONE, Actor.NONE, Actor.NONE,
                 Actor.RED, Actor.NONE, Actor.BLUE
         };
 
-
+/*
         Actor[][] testtst = arrToMat(a);
         for (int i = 0; i < testtst.length; i++) {
             System.out.println(Arrays.toString(testtst[i]));
         }
         System.out.println(Actor.values().length);
+        */
 // Actor[] gfkhj = ArrTo1DArr(testWorld);
 // System.out.println(Arrays.toString(gfkhj));
 // shuffle(gfkhj);
