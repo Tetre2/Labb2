@@ -6,35 +6,28 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+
 import static java.lang.Math.round;
 import static java.lang.Math.sqrt;
 import static java.lang.System.*;
 
 /*
-
 Program Structure:
-
-
 init();
-
 updateWorld();
-
-
 setNA();
 setUnsatisfied();
 calcState();
 getAmountOfFriends();
 getAmountOfNeighbours();
-
 shuffleMatrix();
 switchXandY();
 disbributeActorstoWorld();
-
-
-
-
 * Program to simulate segregation.
 * See : http://nifty.stanford.edu/2014/mccown-schelling-model-segregation/
 *
@@ -61,34 +54,17 @@ public class Neighbours extends Application {
     // Below is the *only* accepted instance variable (i.e. variables outside any method)
 // This variable may *only* be used in methods init() and updateWorld()//TODO LOOK HERE
     private Actor[][] world; // The world is a square matrix of Actors
-    private double speed = 10;
+    private double speed = 0.1;
 
     // This is the method called by the timer to update the world
 // (i.e move unsatisfied) approx each 1/60 sec.
     private void updateWorld() {
 // % of surrounding neighbours that are like me
-        final double threshold = 0.8;
+        final double threshold = 0.5;
 
-        int[][] naActors = getNA(world);
+        ArrayList<int[]> naActors = getNA(world);
         Actor[][] unsatActors = getUnsatisfied(threshold, world);
-
-        swapMatrixData(naActors, unsatActors, world);
-
-        for (int i = 0; i < unsatActors.length; i++) {
-            System.out.println(Arrays.toString(unsatActors[i]));
-        }
-
-
-        int i = 0;
-        for (Actor[] a: unsatActors) {
-            for (Actor a2: a) {
-                if(a2 != null && a2 != Actor.NONE){
-                    i++;
-                }
-            }
-        }
-        System.out.println(i);
-
+        swapMatrixDataToWorld(naActors, unsatActors, world);
     }
 
     // This method initializes the world variable with a random distribution of Actors
@@ -96,33 +72,17 @@ public class Neighbours extends Application {
     // Don't care about "@Override" and "public" (just accept for now)
     @Override
     public void init() {
-        test(); // <---------------- Uncomment to TEST!
+        //test(); // <---------------- Uncomment to TEST!
 
         // %-distribution of RED, BLUE, GREEN and NONE
-        //double[] distribution = {0.3, 0.2, 0.3, 0.20};
+        double[] distribution = {0.3, 0.2, 0.3, 0.20};
         //double[] distribution = {0.15, 0.17, 0.18, 0.50};
-        double[] distribution = {0.25, 0.25, 0, 0.50};
+        //double[] distribution = {0.19, 0.25, 0.55, 0.010};
 
         // Number of locations (places) in world (square)
-        int nLocations = 4;
-
-        Actor[] actors = new Actor[nLocations];
-        int[] arrDistribution = new int[distribution.length];
-
-        //Calculating amount of actors based on distribution and converting from double to int arr.
-        for (int i = 0; i < distribution.length; i++) {
-            arrDistribution[i] = (int) Math.round(distribution[i] * nLocations);
-        }
-
-        //Choose colors according to distribution and place in an actors array.
-        int index = 0;
-        for (int i = 0; i < arrDistribution.length; i++) {
-            for (int j = 0; j < arrDistribution[i]; j++) {
-                actors[index] = chooseColor(i);
-                index++;
-            }
-        }
-
+        int nLocations = 90000;
+        int[] arrDistribution = getDistrubution(distribution, nLocations);
+        Actor[] actors = getActorArrInit(arrDistribution, nLocations);
         shuffle(actors);
         world = arrToMat(actors);
 
@@ -134,47 +94,52 @@ public class Neighbours extends Application {
 
 // ------- Methods ------------------
 
-/*    //index 0 = Y, index 1 = X
-    void distributeActorsToWorld(Actor[][] naActors, Actor[][] unsatActors) {
-        int size = world.length;
-        for (int i = 0; i < world.length * world.length; i++) {
 
-            if (naActors[i / size][i % size] != null) {
-                world[i / size][i % size] = naActors[i / size][i % size];
-            }
-
-            else if (unsatActors[i / size][i % size] != null) {
-                world[i / size][i % size] = unsatActors[i / size][i % size];
+    private Actor[] getActorArrInit(int[] arrDistribution, int nLocations){
+        Actor[] actors = new Actor[nLocations];
+        //Choose colors according to distribution and place in an actors array.
+        int index = 0;
+        for (int i = 0; i < arrDistribution.length; i++) {
+            for (int j = 0; j < arrDistribution[i]; j++) {
+                actors[index] = chooseColor(i);
+                index++;
             }
         }
-    }*/
+        return actors;
+    }
 
-    private int getRandNaActor(Random r, int[][] na){
-        if(na.length <= 0){
+    private int[] getDistrubution(double[] distribution, int nLocations){
+        int[] arrDistribution = new int[distribution.length];
+
+        //Calculating amount of actors based on distribution and converting from double to int arr.
+        for (int i = 0; i < distribution.length; i++) {
+            arrDistribution[i] = (int) Math.round(distribution[i] * nLocations);
+        }
+        return arrDistribution;
+    }
+
+    private int getRandNaActor(Random r, List<int[]> na) {
+        if (na.size() <= 0) {
             return -1;
-        }else {
-            return r.nextInt(na.length);
+        } else {
+            return r.nextInt(na.size());
         }
     }
 
-
-    private void swapMatrixData(int[][] naActors, Actor[][] unsatActors, Actor[][] world) {
+    private void swapMatrixDataToWorld(ArrayList<int[]> naActors, Actor[][] unsatActors, Actor[][] world) {
         //na index 0 = Y, index 1 = X
-
-        //Actor[][] temp = new Actor[world.length][world.length];
-
         Random rand = new Random();
         int size = unsatActors.length;
 
-        for (int i = 0; i < unsatActors.length*unsatActors.length; i++) {
-            if (unsatActors[i/size][i%size] != Actor.NONE && unsatActors[i/size][i%size] != null) {
+        for (int i = 0; i < unsatActors.length * unsatActors.length; i++) {
+            if (unsatActors[i / size][i % size] != Actor.NONE && unsatActors[i / size][i % size] != null) {
 
                 int randNaActor = getRandNaActor(rand, naActors);
                 if (randNaActor != -1) {
 
-                    world[i/size][i%size] = Actor.NONE;         //None to world
-                    world[naActors[randNaActor][0]][naActors[randNaActor][1]] = unsatActors[i/size][i%size];    //unSat to world
-                    naActors[randNaActor] = new int[]{i/size, i%size};       //reuse None so they don't run out
+                    world[i / size][i % size] = Actor.NONE;         //None to world
+                    world[naActors.get(randNaActor)[0]][naActors.get(randNaActor)[1]] = unsatActors[i / size][i % size];    //unSat to world
+                    naActors.remove(randNaActor);      //reuse None so they don't run out
 
                 }
             }
@@ -182,29 +147,18 @@ public class Neighbours extends Application {
     }
 
     //index 0 = Y, index 1 = X
-    private int[][] getNA(Actor[][] world) {
-
-        int amountOfNa = 0;
-        int size = world.length;
-        for (int i = 0; i < world.length*world.length; i++) {
-            if(world[i/size][i%size] == Actor.NONE){
-                amountOfNa++;
-            }
-        }
-
-        int[][] naActors = new int[amountOfNa][2];
-        int counter = 0;
+    private ArrayList<int[]> getNA(Actor[][] world) {
+        ArrayList<int[]> naActors = new ArrayList<>();
 
         //Fill naActors with coordinates of NA within world.
         for (int i = 0; i < world.length; i++) {
             for (int j = 0; j < world.length; j++) {
                 if (world[i][j] == Actor.NONE) {
-                    naActors[counter][0] = i;
-                    naActors[counter][1] = j;
-                    counter++;
+                    naActors.add(new int[]{i, j});
                 }
             }
         }
+
         return naActors;
     }
 
@@ -237,7 +191,7 @@ public class Neighbours extends Application {
         double percentOfSurroundingFriends;
 
         if (getAmountOfNeighbours(y, x, world) == 0) {
-            percentOfSurroundingFriends = 0;
+            percentOfSurroundingFriends = 1; // ifall den är ensam kan vi säga att den är satisfied för att snabbare bygga upp nya "öar"
         } else {
             percentOfSurroundingFriends = (double) getAmountOfFriends(y, x, world) / getAmountOfNeighbours(y, x, world);
         }
@@ -268,8 +222,6 @@ public class Neighbours extends Application {
             }
 
         }
-
-//Tar -1 för att räkna bort sig själv.
         return friends;
     }
 
@@ -287,15 +239,14 @@ public class Neighbours extends Application {
                 int indexY = y + i;
 
                 if (!(i == 0 && j == 0) && isValid(indexY, indexX, world)) {
-                    if (world[indexY][indexX].equals(Actor.NONE)) {
+                    if (!world[indexY][indexX].equals(Actor.NONE)) {
                         neighbours++;
                     }
                 }
             }
 
         }
-//Tar -1 för att räkna bort sig själv. OBS, inte anpassad om cellen är NONE.
-        return neighbours - 1;
+        return neighbours;
 
     }
 
@@ -311,7 +262,6 @@ public class Neighbours extends Application {
 
     private Actor chooseColor(int index) {
         switch (Actor.values().length - index) {
-
             case 1:
                 return Actor.NONE;
             case 2:
@@ -345,52 +295,13 @@ public class Neighbours extends Application {
 
         double th = 0.5; // Simple threshold used for testing
 
-        Actor[][] testWorld = new Actor[][]{
-                {Actor.RED, Actor.RED, Actor.NONE},
-                {Actor.NONE, Actor.RED, Actor.NONE},
-                {Actor.RED, Actor.NONE, Actor.BLUE}
-        };
-        Actor[][] na = new Actor[][]{
-                {null, null, Actor.NONE},
-                {Actor.NONE, null, null},
-                {null, null, null}
-        };
-        Actor[][] unsat = new Actor[][]{
-                {null, Actor.RED, null},
-                {null, null, null},
-                {null, null, Actor.BLUE}
-        };
-
-        int[][] naArr = getNA(testWorld);
-        Actor[][] unsatArr = getUnsatisfied(th, world);
-
-
-
-        System.out.println(calcState(0, 1, th, testWorld));
-
-        Actor[] a = new Actor[]{
-                Actor.RED, Actor.RED, Actor.NONE,
-                Actor.NONE, Actor.NONE, Actor.NONE,
-                Actor.RED, Actor.NONE, Actor.BLUE
-        };
-
-
 
 // TODO test methods
 
         exit(0);
     }
 
-/* // Helper method for testing (NOTE: reference equality)
-int count(T[] arr, T toFind) {
-int count = 0;
-for (int i = 0; i < arr.length; i++) {
-if (arr[i] == toFind) {
-count++;
-}
-}
-return count;
-} */
+ // Helper method for testing (NOTE: reference equality)
 
 
 // ***** NOTHING to do below this row, it's JavaFX stuff ******

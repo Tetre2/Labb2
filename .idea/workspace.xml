@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b59c9394-3765-4d04-8de9-cf1c9022dc71" name="Default" comment="Why does it not work?">
+    <list default="true" id="b59c9394-3765-4d04-8de9-cf1c9022dc71" name="Default" comment="Opimized but not working!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Neighbours.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Neighbours.java" afterDir="false" />
     </list>
@@ -77,14 +77,14 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="4004" />
-          <entry key="txt" value="54" />
+          <entry key="java" value="4674" />
+          <entry key="txt" value="80" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="4004" />
-          <entry key="PLAIN_TEXT" value="54" />
+          <entry key="JAVA" value="4674" />
+          <entry key="PLAIN_TEXT" value="80" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -113,10 +113,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Neighbours.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="303">
-              <caret line="364" column="55" selection-start-line="364" selection-start-column="55" selection-end-line="364" selection-end-column="55" />
+            <state relative-caret-position="293">
+              <caret line="78" column="59" lean-forward="true" selection-start-line="78" selection-start-column="59" selection-end-line="78" selection-end-column="59" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#13921#14365#0" expanded="true" />
+                <element signature="e#14364#14365#0" expanded="true" />
+                <element signature="e#13990#13991#0" expanded="true" />
+                <element signature="e#14018#14019#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -150,10 +154,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="145" />
-    <option name="y" value="6" />
-    <option name="width" value="1104" />
-    <option name="height" value="939" />
+    <option name="width" value="1943" />
+    <option name="height" value="1103" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -166,7 +168,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1538071677364" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1538154562741" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../TEST" />
     <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.0" />
@@ -281,7 +283,14 @@
       <option name="project" value="LOCAL" />
       <updated>1538062497350</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Opimized but not working!">
+      <created>1538125364708</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1538125364708</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TodoView">
@@ -307,7 +316,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2609929" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.25815603" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.32056737" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32907802" />
@@ -334,7 +343,8 @@
     <MESSAGE value="Framsteg på riktigt! Ordnat en faktiskt hierarki av metoder och programflöde." />
     <MESSAGE value="Working but not optimized" />
     <MESSAGE value="Why does it not work?" />
-    <option name="LAST_COMMIT_MESSAGE" value="Why does it not work?" />
+    <MESSAGE value="Opimized but not working!" />
+    <option name="LAST_COMMIT_MESSAGE" value="Opimized but not working!" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/src/TODO.txt" />
@@ -361,10 +371,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Neighbours.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="303">
-          <caret line="364" column="55" selection-start-line="364" selection-start-column="55" selection-end-line="364" selection-end-column="55" />
+        <state relative-caret-position="293">
+          <caret line="78" column="59" lean-forward="true" selection-start-line="78" selection-start-column="59" selection-end-line="78" selection-end-column="59" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#13921#14365#0" expanded="true" />
+            <element signature="e#14364#14365#0" expanded="true" />
+            <element signature="e#13990#13991#0" expanded="true" />
+            <element signature="e#14018#14019#0" expanded="true" />
           </folding>
         </state>
       </provider>
